@@ -16,7 +16,7 @@ MARKET = 'SOL_USDC' #Pair
 BID_SPREAD = 0.0005  # Spread for bid orders, adjust as needed
 ASK_SPREAD = 0.0005  # Spread for ask orders, adjust as needed
 ORDER_REFRESH_TIME = 30  # Time in seconds to refresh orders
-
+POSITION_SIZE = 0.1 #In SOL
 # Your API keys and ED25519 keys
 API_KEY = os.getenv("API_KEY")
 
@@ -129,11 +129,11 @@ def market_maker_cycle():
 
     # Assume size is 1 for demonstration purposes, adjust as needed
     try:
-        bid_order = place_order('Bid', bid_price, 0.1)
+        bid_order = place_order('Bid', bid_price, POSITION_SIZE)
     except:
         pass
     try:
-        ask_order = place_order('Ask', ask_price, 0.1)
+        ask_order = place_order('Ask', ask_price, POSITION_SIZE)
     except:
         pass
     print(f"Placed orders: {bid_order} {ask_order}")

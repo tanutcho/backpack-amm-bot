@@ -4,26 +4,29 @@ import base64
 import json
 from cryptography.hazmat.primitives.asymmetric import ed25519
 from urllib.parse import urlencode
+from dotenv import load_dotenv
+import os
+import logging
+
+load_dotenv()
 
 # Constants
 API_URL = 'https://api.backpack.exchange'
-MARKET = 'SOL_USDC'
+MARKET = 'SOL_USDC' #Pair
 BID_SPREAD = 0.0005  # Spread for bid orders, adjust as needed
 ASK_SPREAD = 0.0005  # Spread for ask orders, adjust as needed
 ORDER_REFRESH_TIME = 30  # Time in seconds to refresh orders
 
 # Your API keys and ED25519 keys
-API_KEY = ''
+API_KEY = os.getenv("API_KEY")
 
 # Assuming your_base64_private_key is the base64 encoded ED25519 private key
-encoded_private_key = ''
-
+encoded_private_key = os.getenv("API_SECRET")
 # Decode the base64 encoded private key to get the raw bytes
 private_key_bytes = base64.b64decode(encoded_private_key)
 
 # Load the private key from the raw bytes
 private_key = ed25519.Ed25519PrivateKey.from_private_bytes(private_key_bytes)
-import logging
 
 # Setup logging
 logging.basicConfig(filename='market_maker.log', level=logging.INFO, format='%(asctime)s %(message)s')

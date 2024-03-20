@@ -10,13 +10,19 @@ import logging
 
 load_dotenv()
 
-# Constants
-API_URL = 'https://api.backpack.exchange'
+# Constants - adjust as needed
 MARKET = 'SOL_USDC' #Pair
 BID_SPREAD = 0.0005  # Spread for bid orders, adjust as needed
 ASK_SPREAD = 0.0005  # Spread for ask orders, adjust as needed
 ORDER_REFRESH_TIME = 30  # Time in seconds to refresh orders
 POSITION_SIZE = 0.1 #In SOL
+
+
+
+
+#Backpack.exchange URL
+API_URL = 'https://api.backpack.exchange'
+
 # Your API keys and ED25519 keys
 API_KEY = os.getenv("API_KEY")
 

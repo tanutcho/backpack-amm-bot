@@ -14,7 +14,7 @@ The AMM strategy follows these steps:
 1. Open the account on backpack.exchange [Link to Backpack with Affiliate - little tip to dev](https://backpack.exchange/refer/f101340c-cd34-497f-b5a3-ee1ca8df1cda)
 2. Create API Key from Settings page in backpack, Please note API_KEY and API_SECRET you may use in next section
 3. Install Python 3 on your computer
-4. Clone this repository ```git clone git@github.com:tanutcho/backpack-amm-bot.git ```
+4. Clone this repository ```git clone https://github.com/tanutcho/backpack-amm-bot.git ```
 5. Edit `sample.env` file to your API_KEY and API_SECRET from (2)
 6. Rename `sample.env` to `.env`
 7. Install dependency and run backpack.py script

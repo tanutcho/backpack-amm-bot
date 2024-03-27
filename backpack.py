@@ -7,15 +7,16 @@ from urllib.parse import urlencode
 from dotenv import load_dotenv
 import os
 import logging
+import math
 
 load_dotenv()
 
 # Constants - adjust as needed
-MARKET = 'SOL_USDC' #Pair
-BID_SPREAD = 0.0005  # Spread for bid orders, adjust as needed
-ASK_SPREAD = 0.0005  # Spread for ask orders, adjust as needed
+MARKET = 'WEN_USDC' #Pair
+BID_SPREAD = 0.01  # Spread for bid orders, adjust as needed
+ASK_SPREAD = 0.01  # Spread for ask orders, adjust as needed
 ORDER_REFRESH_TIME = 30  # Time in seconds to refresh orders
-POSITION_SIZE = 0.1 #In SOL
+POSITION_SIZE = 30000 #In First Currency
 
 
 
@@ -74,15 +75,35 @@ def get_market_price():
     else:
         print("Unexpected response structure:", data)
         return None  # Or handle as appropriate
+    
 def place_order(side, price, size):
     timestamp = int(time.time() * 1000)
     instruction = 'orderExecute'
+
+    # Load JSON data from the file
+    with open('market.json', 'r') as f:
+        market_data = json.load(f)
+
+    # Get the market info for the current MARKET symbol
+    market_info = next((market for market in market_data if market['symbol'] == MARKET), None)
+    if market_info is None:
+        log_to_console_and_file(f"Error: {MARKET} not found in the market data.")
+        return None
+
+    # Get the tick size and step size from the market info
+    tick_size = market_info['filters']['price']['tickSize']
+    step_size = market_info['filters']['quantity']['stepSize']
+
+   # Round the price and quantity based on the tick size and step size
+    rounded_price = round(float(price), int(-1 * math.log10(float(tick_size))))
+    rounded_quantity = round(float(size), int(-1 * math.log10(float(step_size))))
+
     order_data = {
         'symbol': MARKET,
         'orderType': 'Limit',  # Ensure this is correct as per the API
-        'side': side,  # Typically 'buy' or 'sell'
-        'price': f"{price:.2f}",  # Ensure the API accepts the format (string or number)
-        'quantity': size,  # Ensure the API accepts the format (string or number)
+        'side': side,  # Typically 'Bid' or 'Ask'
+        'price': str(rounded_price),  # Ensure the API accepts the format (string or number)
+        'quantity': str(rounded_quantity),  # Ensure the API accepts the format (string or number)
     }
     headers = get_headers(instruction, order_data, timestamp)
     response = requests.post(f'{API_URL}/api/v1/order', headers=headers, json=order_data)
@@ -132,17 +153,45 @@ def market_maker_cycle():
     
     # Cancel all existing orders before placing new ones
     cancel_all_orders(MARKET)
+    # Load JSON data from the file
+    with open('market.json', 'r') as f:
+        market_data = json.load(f)
 
-    # Assume size is 1 for demonstration purposes, adjust as needed
+    # Check if the MARKET symbol exists in the JSON data
+    market_info = next((market for market in market_data if market['symbol'] == MARKET), None)
+    if market_info is None:
+        log_to_console_and_file(f"Error: {MARKET} not found in the market data.")
+        return
+
+    # Check if the POSITION_SIZE meets the minimum quantity requirement
+    min_quantity = market_info['filters']['quantity']['minQuantity']
+    if POSITION_SIZE < float(min_quantity):
+        log_to_console_and_file(f"Error: POSITION_SIZE {POSITION_SIZE} is less than the minimum quantity {min_quantity} for {MARKET}.")
+        return
+
     try:
         bid_order = place_order('Bid', bid_price, POSITION_SIZE)
-    except:
-        pass
+    except Exception as e:
+        log_to_console_and_file(f"Error placing bid order: {str(e)}")
+
     try:
         ask_order = place_order('Ask', ask_price, POSITION_SIZE)
-    except:
-        pass
+    except Exception as e:
+        log_to_console_and_file(f"Error placing ask order: {str(e)}")
+
     print(f"Placed orders: {bid_order} {ask_order}")
+
+
+    # Assume size is 1 for demonstration purposes, adjust as needed
+    # try:
+    #     bid_order = place_order('Bid', bid_price, POSITION_SIZE)
+    # except:
+    #     pass
+    # try:
+    #     ask_order = place_order('Ask', ask_price, POSITION_SIZE)
+    # except:
+    #     pass
+    # print(f"Placed orders: {bid_order} {ask_order}")
 
 def run_market_maker():
     while True:
